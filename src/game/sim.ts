@@ -36,7 +36,7 @@ export function pushOut(e: { x: number; z: number }, r: number, boxes: Box[]) {
 function makeCar(id: number, type: CarType, route: P[], ai: Car["ai"]): Car {
   return {
     id, type, route, ai, idx: 0, x: 0, z: 0, h: 0, vx: 0, vz: 0, speed: 0, active: true, stun: 0, blocked: 0, hitCd: 0,
-    color: type === "sedan" ? SEDAN_COLORS[Math.floor(Math.random() * SEDAN_COLORS.length)] : "",
+    color: type === "sedan" ? SEDAN_COLORS[Math.floor(Math.random() * SEDAN_COLORS.length)]! : "",
     obj: null, lights: [],
   };
 }

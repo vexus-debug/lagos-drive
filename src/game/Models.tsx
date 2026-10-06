@@ -15,7 +15,7 @@ function mat(color: string) {
 
 function B({ s, p, c, r }: { s: [number, number, number]; p: [number, number, number]; c: string; r?: [number, number, number] }) {
   return (
-    <mesh position={p} rotation={r} material={mat(c)} castShadow>
+    <mesh position={p} rotation={r ?? [0, 0, 0]} material={mat(c)} castShadow>
       <boxGeometry args={s} />
     </mesh>
   );
@@ -197,7 +197,7 @@ export function WorldMesh({ W }: { W: World }) {
           <B s={[0.3, 9, 0.3]} p={[3, 4.5, 0]} c="#555" />
           <mesh position={[0, 10, 0.05]} rotation-y={Math.PI}>
             <planeGeometry args={[10, 3.75]} />
-            <meshBasicMaterial map={signs[i]} toneMapped={false} />
+            <meshBasicMaterial map={signs[i] ?? null} toneMapped={false} />
           </mesh>
           <B s={[10.3, 4, 0.1]} p={[0, 10, 0.12]} c="#333" />
         </group>

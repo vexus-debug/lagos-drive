@@ -178,26 +178,26 @@ export class GameAudio {
     if (this.station === 0) {
       const roots = [45, 41, 48, 43];
       const qual = [[0, 3, 7], [0, 4, 7], [0, 4, 7], [0, 4, 7]];
-      const root = roots[bar];
+      const root = roots[bar]!;
       if ([0, 7, 8, 13].includes(s)) this.kick(t);
       if (s === 4 || s === 12) this.burst(t, 0.18, 0.45, "bandpass", 1500, out);
       this.burst(t, 0.04, s % 2 ? 0.12 : 0.06, "highpass", 7000, out);
       if ([3, 10, 14].includes(s)) this.tone(s === 10 ? 330 : 260, t, 0.12, "sine", 0.3, 4000, out);
       if ([0, 3, 6, 8, 11, 14].includes(s)) this.tone(mtof(root + (s === 6 ? 12 : 0)), t, spb * 2, "triangle", 0.45, 700, out);
-      if ([2, 5, 10, 13].includes(s)) qual[bar].forEach((iv) => this.tone(mtof(root + 24 + iv), t, 0.14, "square", 0.05, 2600, out));
+      if ([2, 5, 10, 13].includes(s)) qual[bar]!.forEach((iv) => this.tone(mtof(root + 24 + iv), t, 0.14, "square", 0.05, 2600, out));
       const mel = [0, -1, 7, -1, 10, 7, -1, 12, -1, 10, 7, -1, 5, -1, 3, -1];
-      if (mel[s] >= 0 && bar % 2 === 1) this.tone(mtof(57 + 12 + mel[s]), t, 0.18, "triangle", 0.12, 5000, out);
+      if (mel[s]! >= 0 && bar % 2 === 1) this.tone(mtof(57 + 12 + mel[s]!), t, 0.18, "triangle", 0.12, 5000, out);
     } else {
       const roots = [40, 36, 43, 38];
-      const root = roots[bar];
+      const root = roots[bar]!;
       if (s % 4 === 0) this.kick(t);
       if (s === 4 || s === 12) this.burst(t, 0.2, 0.4, "highpass", 1200, out);
       if (s % 2 === 1) this.burst(t, 0.03, 0.1, "highpass", 8000, out);
       if (s % 2 === 0) this.tone(mtof(root + (s % 4 === 2 ? 12 : 0)), t, spb * 1.8, "sawtooth", 0.18, 600, out);
       const arp = [0, 7, 12, 15, 19, 15, 12, 7];
-      this.tone(mtof(root + 36 + arp[s % 8] - 12), t, 0.12, "square", 0.045, 3000, out);
+      this.tone(mtof(root + 36 + arp[s % 8]! - 12), t, 0.12, "square", 0.045, 3000, out);
       const lead = [12, -1, -1, 15, -1, -1, 19, -1, 17, -1, 15, -1, 12, -1, 10, -1];
-      if (bar >= 2 && lead[s] >= 0) this.tone(mtof(root + 36 + lead[s]), t, 0.3, "sawtooth", 0.06, 2500, out);
+      if (bar >= 2 && lead[s]! >= 0) this.tone(mtof(root + 36 + lead[s]!), t, 0.3, "sawtooth", 0.06, 2500, out);
     }
   }
 }
