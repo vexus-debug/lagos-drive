@@ -72,7 +72,6 @@ export function WorldMesh({ W }: { W: World }) {
   const leafRef = useRef<THREE.InstancedMesh>(null);
   const tableRef = useRef<THREE.InstancedMesh>(null);
   const canopyRef = useRef<THREE.InstancedMesh>(null);
-  const winTex = useMemo(windowTexture, []);
   const signs = useMemo(() => W.billboards.map((b) => makeSign(b.text, b.bg, b.fg)), [W]);
 
   useLayoutEffect(() => {
@@ -108,7 +107,6 @@ export function WorldMesh({ W }: { W: World }) {
     if (canopyRef.current!.instanceColor) canopyRef.current!.instanceColor.needsUpdate = true;
   }, [W]);
 
-  const road = "#3a3a40";
   const T = useMemo(() => {
     const roadH = new THREE.MeshLambertMaterial({ map: asphalt(52, 2) });
     const roadV = new THREE.MeshLambertMaterial({ map: asphalt(2, 52) });
