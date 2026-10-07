@@ -52,7 +52,7 @@ function makeSign(text: string, bg: string, fg: string) {
   return t;
 }
 
-function windowTexture() {
+export function windowTexture() {
   const c = document.createElement("canvas");
   c.width = 64;
   c.height = 128;
@@ -163,9 +163,9 @@ export function WorldMesh({ W }: { W: World }) {
         </group>
       ))}
       {/* bridge */}
-      <mesh position={[0, -0.2, 316]} receiveShadow material={mat(road)}><boxGeometry args={[16, 0.5, 210]} /></mesh>
+      <mesh position={[0, -0.2, 316]} receiveShadow material={T.bridge}><boxGeometry args={[16, 0.5, 210]} /></mesh>
       <mesh position={[0, 0.06, 316]} material={mat("#f2c230")}><boxGeometry args={[0.35, 0.01, 210]} /></mesh>
-      <mesh position={[0, 0.02, 450]} receiveShadow material={mat(road)}><boxGeometry args={[16, 0.04, 64]} /></mesh>
+      <mesh position={[0, 0.02, 450]} receiveShadow material={T.roadV}><boxGeometry args={[16, 0.04, 64]} /></mesh>
       {[-8.4, 8.4].map((x) => (
         <mesh key={x} position={[x, 0.5, 316]} material={mat("#e6e1d3")} castShadow><boxGeometry args={[0.6, 1, 208]} /></mesh>
       ))}
@@ -183,7 +183,7 @@ export function WorldMesh({ W }: { W: World }) {
       {/* buildings */}
       <instancedMesh ref={bRef} args={[undefined, undefined, W.buildings.length]} castShadow receiveShadow>
         <boxGeometry />
-        <meshLambertMaterial map={winTex} flatShading />
+        <primitive object={T.fac} attach="material" />
       </instancedMesh>
       <instancedMesh ref={trunkRef} args={[undefined, undefined, W.palms.length]} castShadow>
         <cylinderGeometry args={[0.18, 0.3, 7, 5]} />
