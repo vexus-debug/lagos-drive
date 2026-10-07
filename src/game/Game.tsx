@@ -7,6 +7,7 @@ import { CarModel, Markers, PedModel, WorldMesh } from "./Models";
 import { createState, step } from "./sim";
 import { SPECS, type GameState, type Input } from "./types";
 import { buildWorld, type World } from "./world";
+import { TouchControls } from "./TouchControls";
 
 function Sim({ S, W, input, audio }: { S: GameState; W: World; input: React.RefObject<Input>; audio: GameAudio }) {
   const sun = useRef<THREE.DirectionalLight>(null);
@@ -134,14 +135,39 @@ export function Game() {
     };
   }, [S]);
 
+  const [touch, setTouch] = useState(false);
+  const [portrait, setPortrait] = useState(false);
+  useEffect(() => {
+    setTouch(window.matchMedia("(pointer: coarse)").matches || "ontouchstart" in window);
+    const mq = window.matchMedia("(orientation: portrait)");
+    const upd = () => setPortrait(mq.matches);
+    upd();
+    mq.addEventListener("change", upd);
+    return () => mq.removeEventListener("change", upd);
+  }, []);
+
   const play = () => {
     audio.init();
     setStarted(true);
+    if (touch) {
+      const el = document.documentElement;
+      const go = el.requestFullscreen ? el.requestFullscreen() : Promise.resolve();
+      go.then(() => (screen.orientation as unknown as { lock?: (o: string) => Promise<void> }).lock?.("landscape"))
+        .catch(() => {});
+      S.locked = true;
+      setLocked(true);
+      return;
+    }
     void wrap.current?.requestPointerLock();
+  };
+  const pause = () => {
+    S.locked = false;
+    setLocked(false);
+    input.current.keys.clear();
   };
 
   return (
-    <div ref={wrap} className="fixed inset-0 bg-background" onClick={() => started && !locked && play()}>
+    <div ref={wrap} className="fixed inset-0 bg-background" onClick={() => !touch && started && !locked && play()}>
       <Canvas shadows dpr={[1, 1.5]} camera={{ fov: 75, near: 0.1, far: 700, position: [10, 1.65, 20] }}>
         <WorldMesh W={W} />
         {S.cars.map((c) => <CarModel key={c.id} car={c} />)}
@@ -150,6 +176,14 @@ export function Game() {
         <Sim S={S} W={W} input={input} audio={audio} />
       </Canvas>
       <HUD S={S} audio={audio} />
+      {touch && locked && <TouchControls input={input} onPause={pause} />}
+      {touch && portrait && (
+        <div className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-4 bg-hud-overlay px-8 text-center font-hud text-hud-ink">
+          <div className="text-6xl">⟳</div>
+          <div className="font-display text-2xl text-hud-star">ROTATE YOUR PHONE</div>
+          <div className="text-sm opacity-80">Eko Run plays sideways. Turn your phone to landscape (and switch off rotation lock).</div>
+        </div>
+      )}
       {!locked && (
         <div className="absolute inset-0 z-20 flex items-center justify-center bg-hud-overlay">
           <div className="max-w-lg px-6 text-center font-hud text-hud-ink">
