@@ -2,6 +2,7 @@ import { useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import type { Car, GameState, Ped } from "./types";
 import { LINES, type World } from "./world";
+import { asphalt, facade, ground, pavement, worldUVFacade } from "./textures";
 
 const mats = new Map<string, THREE.MeshLambertMaterial>();
 function mat(color: string) {
@@ -51,7 +52,7 @@ function makeSign(text: string, bg: string, fg: string) {
   return t;
 }
 
-function windowTexture() {
+export function windowTexture() {
   const c = document.createElement("canvas");
   c.width = 64;
   c.height = 128;
@@ -72,7 +73,6 @@ export function WorldMesh({ W }: { W: World }) {
   const leafRef = useRef<THREE.InstancedMesh>(null);
   const tableRef = useRef<THREE.InstancedMesh>(null);
   const canopyRef = useRef<THREE.InstancedMesh>(null);
-  const winTex = useMemo(windowTexture, []);
   const signs = useMemo(() => W.billboards.map((b) => makeSign(b.text, b.bg, b.fg)), [W]);
 
   useLayoutEffect(() => {
@@ -108,30 +108,41 @@ export function WorldMesh({ W }: { W: World }) {
     if (canopyRef.current!.instanceColor) canopyRef.current!.instanceColor.needsUpdate = true;
   }, [W]);
 
-  const road = "#3a3a40";
+  const T = useMemo(() => {
+    const roadH = new THREE.MeshLambertMaterial({ map: asphalt(52, 2) });
+    const roadV = new THREE.MeshLambertMaterial({ map: asphalt(2, 52) });
+    const bridge = new THREE.MeshLambertMaterial({ map: asphalt(2, 26) });
+    const walk = new THREE.MeshLambertMaterial({ map: pavement(20, 20) });
+    const lot = new THREE.MeshLambertMaterial({ map: ground(10, 10, "#9c9a72", ["#7d8a4f", "#b3a77c", "#6f7a45", "#c2b48a"]) });
+    const dirt = new THREE.MeshLambertMaterial({ map: ground(10, 10, "#b98b5e", ["#9a6e45", "#cfa478", "#7f5a38"]) });
+    const sand = new THREE.MeshLambertMaterial({ map: ground(40, 40, "#e8d3a0", ["#d4bc86", "#f4e4bc", "#c7ad78"]) });
+    const fac = new THREE.MeshStandardMaterial({ map: facade(), roughness: 0.75, metalness: 0.05 });
+    worldUVFacade(fac);
+    return { roadH, roadV, bridge, walk, lot, dirt, sand, fac };
+  }, []);
   return (
     <group>
       {/* water + land */}
       <mesh rotation-x={-Math.PI / 2} position={[0, -1.3, 0]}>
         <planeGeometry args={[3000, 3000]} />
-        <meshLambertMaterial color="#2b9fb3" />
+        <meshStandardMaterial color="#1f8aa0" roughness={0.12} metalness={0.3} />
       </mesh>
       <mesh position={[0, -1.5, 0]} receiveShadow material={mat("#c9b089")}>
         <boxGeometry args={[430, 3, 430]} />
       </mesh>
-      <mesh position={[0, -0.5, 211]} receiveShadow material={mat("#f0dca8")}>
+      <mesh position={[0, -0.5, 211]} receiveShadow material={T.sand}>
         <boxGeometry args={[430, 1.02, 8]} />
       </mesh>
-      <mesh position={[0, -1.5, 467]} receiveShadow material={mat("#d8c79e")}>
+      <mesh position={[0, -1.5, 467]} receiveShadow material={T.sand}>
         <boxGeometry args={[120, 3, 100]} />
       </mesh>
       {/* blocks */}
       {W.blocks.map((b, i) => (
         <group key={i}>
-          <mesh position={[(b.minX + b.maxX) / 2, 0.06, (b.minZ + b.maxZ) / 2]} receiveShadow material={mat("#c4bcae")}>
+          <mesh position={[(b.minX + b.maxX) / 2, 0.06, (b.minZ + b.maxZ) / 2]} receiveShadow material={T.walk}>
             <boxGeometry args={[b.maxX - b.minX, 0.12, b.maxZ - b.minZ]} />
           </mesh>
-          <mesh position={[(b.minX + b.maxX) / 2, 0.08, (b.minZ + b.maxZ) / 2]} receiveShadow material={mat(i === 7 ? "#b98b5e" : "#a8a07f")}>
+          <mesh position={[(b.minX + b.maxX) / 2, 0.08, (b.minZ + b.maxZ) / 2]} receiveShadow material={i === 7 ? T.dirt : T.lot}>
             <boxGeometry args={[b.maxX - b.minX - 8, 0.13, b.maxZ - b.minZ - 8]} />
           </mesh>
         </group>
@@ -139,8 +150,8 @@ export function WorldMesh({ W }: { W: World }) {
       {/* roads */}
       {LINES.map((v) => (
         <group key={v}>
-          <mesh position={[0, 0.02, v]} receiveShadow material={mat(road)}><boxGeometry args={[416, 0.04, 16]} /></mesh>
-          <mesh position={[v, 0.021, 0]} receiveShadow material={mat(road)}><boxGeometry args={[16, 0.04, 416]} /></mesh>
+          <mesh position={[0, 0.02, v]} receiveShadow material={T.roadH}><boxGeometry args={[416, 0.04, 16]} /></mesh>
+          <mesh position={[v, 0.021, 0]} receiveShadow material={T.roadV}><boxGeometry args={[16, 0.04, 416]} /></mesh>
           <mesh position={[0, 0.045, v]} material={mat("#f2c230")}><boxGeometry args={[416, 0.01, 0.35]} /></mesh>
           <mesh position={[v, 0.046, 0]} material={mat("#f2c230")}><boxGeometry args={[0.35, 0.01, 416]} /></mesh>
           {[-7.3, 7.3].map((o) => (
@@ -152,9 +163,9 @@ export function WorldMesh({ W }: { W: World }) {
         </group>
       ))}
       {/* bridge */}
-      <mesh position={[0, -0.2, 316]} receiveShadow material={mat(road)}><boxGeometry args={[16, 0.5, 210]} /></mesh>
+      <mesh position={[0, -0.2, 316]} receiveShadow material={T.bridge}><boxGeometry args={[16, 0.5, 210]} /></mesh>
       <mesh position={[0, 0.06, 316]} material={mat("#f2c230")}><boxGeometry args={[0.35, 0.01, 210]} /></mesh>
-      <mesh position={[0, 0.02, 450]} receiveShadow material={mat(road)}><boxGeometry args={[16, 0.04, 64]} /></mesh>
+      <mesh position={[0, 0.02, 450]} receiveShadow material={T.roadV}><boxGeometry args={[16, 0.04, 64]} /></mesh>
       {[-8.4, 8.4].map((x) => (
         <mesh key={x} position={[x, 0.5, 316]} material={mat("#e6e1d3")} castShadow><boxGeometry args={[0.6, 1, 208]} /></mesh>
       ))}
@@ -172,7 +183,7 @@ export function WorldMesh({ W }: { W: World }) {
       {/* buildings */}
       <instancedMesh ref={bRef} args={[undefined, undefined, W.buildings.length]} castShadow receiveShadow>
         <boxGeometry />
-        <meshLambertMaterial map={winTex} flatShading />
+        <primitive object={T.fac} attach="material" />
       </instancedMesh>
       <instancedMesh ref={trunkRef} args={[undefined, undefined, W.palms.length]} castShadow>
         <cylinderGeometry args={[0.18, 0.3, 7, 5]} />

@@ -11,11 +11,27 @@ import { TouchControls } from "./TouchControls";
 
 function Sim({ S, W, input, audio }: { S: GameState; W: World; input: React.RefObject<Input>; audio: GameAudio }) {
   const sun = useRef<THREE.DirectionalLight>(null);
-  const { camera, scene } = useThree();
+  const { camera, scene, gl } = useThree();
+  const sky = useMemo(() => {
+    const s = new Sky();
+    s.scale.setScalar(600);
+    const u = s.material.uniforms;
+    u.turbidity.value = 6;
+    u.rayleigh.value = 1.6;
+    u.mieCoefficient.value = 0.006;
+    u.mieDirectionalG.value = 0.85;
+    u.sunPosition.value.set(50, 30, 35).normalize();
+    (s.material as THREE.ShaderMaterial).fog = false;
+    return s;
+  }, []);
   useEffect(() => {
     camera.rotation.order = "YXZ";
     if (sun.current) scene.add(sun.current.target);
-  }, [camera, scene]);
+    gl.toneMapping = THREE.ACESFilmicToneMapping;
+    gl.toneMappingExposure = 0.9;
+    gl.shadowMap.type = THREE.PCFSoftShadowMap;
+  }, [camera, scene, gl]);
+  useFrame(() => sky.position.copy(camera.position));
 
   useFrame((_, raw) => {
     const dt = Math.min(raw, 0.05);
@@ -76,13 +92,13 @@ function Sim({ S, W, input, audio }: { S: GameState; W: World; input: React.RefO
 
   return (
     <>
-      <color attach="background" args={["#f5d7a8"]} />
-      <fog attach="fog" args={["#f2d3a2", 70, 340]} />
-      <hemisphereLight args={["#fff2d6", "#b08a5a", 1.1]} />
+      <primitive object={sky} />
+      <fog attach="fog" args={["#e9d8bd", 90, 420]} />
+      <hemisphereLight args={["#cfe3f5", "#9c7c55", 0.9]} />
       <directionalLight
         ref={sun}
-        color="#fff0cf"
-        intensity={2.4}
+        color="#ffe6c0"
+        intensity={2.8}
         castShadow
         shadow-mapSize={[2048, 2048]}
         shadow-camera-left={-70}
