@@ -2,6 +2,7 @@ import { useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import type { Car, GameState, Ped } from "./types";
 import { LINES, type World } from "./world";
+import { asphalt, facade, ground, pavement, worldUVFacade } from "./textures";
 
 const mats = new Map<string, THREE.MeshLambertMaterial>();
 function mat(color: string) {
