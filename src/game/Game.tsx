@@ -1,6 +1,7 @@
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
+import { Sky } from "three/examples/jsm/objects/Sky.js";
 import { GameAudio } from "./audio";
 import { HUD } from "./HUD";
 import { CarModel, Markers, PedModel, WorldMesh } from "./Models";
