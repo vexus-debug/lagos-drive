@@ -96,6 +96,11 @@ export function facade() {
   g.beginPath();
   g.moveTo(30, 80); g.lineTo(50, 26); g.lineTo(60, 26); g.lineTo(40, 80);
   g.fill();
+  // burglar-proof grille (Lagos staple)
+  g.fillStyle = "#2b2b2b";
+  for (let x = 30; x < 102; x += 8) g.fillRect(x, 24, 2, 60);
+  g.fillRect(24, 40, 80, 2);
+  g.fillRect(24, 64, 80, 2);
   // AC unit
   g.fillStyle = "#e4e4e0";
   g.fillRect(84, 74, 18, 12);
@@ -110,6 +115,29 @@ export function facade() {
   const t = tex(c);
   t.anisotropy = 4;
   return t;
+}
+
+/** Ground-floor shop band: roll-up metal shutters + painted shop signs. */
+export function shopfront() {
+  const [c, g] = canvas(256, 64);
+  const signs = ["PHARMACY", "LAW CHAMBERS", "POS", "PHONES", "CHOP BAR", "PROVISIONS", "BDC", "SALON"];
+  const cols = ["#d62828", "#1d4ed8", "#0b6e4f", "#f4a261", "#7b2cbf", "#e9c46a"];
+  for (let k = 0; k < 2; k++) {
+    const x0 = k * 128;
+    g.fillStyle = cols[(Math.random() * cols.length) | 0];
+    g.fillRect(x0, 0, 128, 18);
+    g.fillStyle = "#fff";
+    g.font = "bold 12px Impact, sans-serif";
+    g.textAlign = "center";
+    g.fillText(signs[(Math.random() * signs.length) | 0], x0 + 64, 14);
+    g.fillStyle = "#9aa0a4";
+    g.fillRect(x0 + 6, 18, 116, 46);
+    g.fillStyle = "#7c8287";
+    for (let y = 20; y < 64; y += 3) g.fillRect(x0 + 6, y, 116, 1);
+    g.fillStyle = "#555";
+    g.fillRect(x0, 18, 6, 46);
+  }
+  return tex(c);
 }
 
 /** Make box UVs repeat per world metre on instanced buildings (tile = 4m x 3.5m). */
