@@ -17,11 +17,11 @@ function Sim({ S, W, input, audio }: { S: GameState; W: World; input: React.RefO
     const s = new Sky();
     s.scale.setScalar(600);
     const u = s.material.uniforms;
-    u.turbidity.value = 6;
-    u.rayleigh.value = 1.6;
-    u.mieCoefficient.value = 0.006;
-    u.mieDirectionalG.value = 0.85;
-    u.sunPosition.value.set(50, 30, 35).normalize();
+    u["turbidity"]!.value = 6;
+    u["rayleigh"]!.value = 1.6;
+    u["mieCoefficient"]!.value = 0.006;
+    u["mieDirectionalG"]!.value = 0.85;
+    u["sunPosition"]!.value.set(50, 30, 35).normalize();
     (s.material as THREE.ShaderMaterial).fog = false;
     return s;
   }, []);
