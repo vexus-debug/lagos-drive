@@ -19,15 +19,20 @@ export function rng(seed: number) {
 const PALETTE = ["#f2e3c6", "#e8b07a", "#d9734e", "#5fb3a8", "#f4d35e", "#e6e1d3", "#8fb8de", "#c97b84", "#f0a868", "#9cc69b"];
 const STALL = ["#e63946", "#f4a261", "#2a9d8f", "#e9c46a", "#457b9d", "#8ac926", "#ff6b9a"];
 const SIGNS: [string, string, string][] = [
-  ["EKO ATLANTIC", "#0b4f6c", "#fdfcdc"],
-  ["JOLLOF KING", "#d62828", "#fcbf49"],
+  ["WELCOME TO LAGOS ISLAND", "#0b6e4f", "#ffffff"],
+  ["BALOGUN MARKET", "#d62828", "#fcbf49"],
   ["GO-SLOW? NO WAHALA", "#fcbf49", "#1d3557"],
-  ["MAMA PUT 24/7", "#2a9d8f", "#fefae0"],
-  ["SUYA SPOT", "#6a040f", "#ffba08"],
-  ["LAGOS NO DEY CARRY LAST", "#1d3557", "#f1faee"],
-  ["DANFO FM 92.3", "#ffd60a", "#000814"],
-  ["ZOBO FRESH", "#7b2cbf", "#ffd6ff"],
+  ["MAMA PUT - BROAD ST", "#2a9d8f", "#fefae0"],
+  ["SUYA SPOT IDUMOTA", "#6a040f", "#ffba08"],
+  ["EKO O NI BAJE", "#1d3557", "#f1faee"],
+  ["CMS BUS TERMINAL", "#ffd60a", "#000814"],
+  ["POS / BUREAU DE CHANGE", "#7b2cbf", "#ffd6ff"],
 ];
+/** Real Lagos Island street names mapped onto the road lines (z = horizontal, x = vertical). */
+export const STREET_Z: Record<number, string> = { [-200]: "Nnamdi Azikiwe St", [-100]: "Marina (Expressway)", 0: "Broad Street", 100: "Martins Street", 200: "Marina Waterfront" };
+export const STREET_X: Record<number, string> = { [-200]: "Idumota Rd", [-100]: "Balogun St", 0: "Odunlami St", 100: "Joseph St", 200: "CMS / Bishop Crowther" };
+export const NECOM = { x: 50, z: 50, w: 16, h: 95 };
+export const GPT_COLORS = ["#1a1a1a", "#2a2a2a", "#1d4ed8", "#111"];
 
 export function buildWorld() {
   const r = rng(1337);
@@ -85,6 +90,41 @@ export function buildWorld() {
   ];
   spots.forEach(([x, z, rot], k) => billboards.push({ x, z, rot, text: SIGNS[k][0], bg: SIGNS[k][1], fg: SIGNS[k][2] }));
 
+  // NECOM House landmark: clear its plot, then add the tower
+  {
+    const n = { minX: NECOM.x - NECOM.w / 2, maxX: NECOM.x + NECOM.w / 2, minZ: NECOM.z - NECOM.w / 2, maxZ: NECOM.z + NECOM.w / 2 };
+    const hit = (b: Box) => b.maxX > n.minX - 4 && b.minX < n.maxX + 4 && b.maxZ > n.minZ - 4 && b.minZ < n.maxZ + 4;
+    for (let k = buildings.length - 1; k >= 0; k--) if (hit(buildings[k])) buildings.splice(k, 1);
+    for (let k = colliders.length - 1; k >= 0; k--) if (hit(colliders[k])) colliders.splice(k, 1);
+    buildings.push({ ...n, h: NECOM.h, color: "#d8d4cc" });
+    colliders.push(n);
+  }
+
+  // Danfo bus stops (yellow shelters) on sidewalks
+  const busStops: { x: number; z: number; rot: number; name: string }[] = [];
+  const stopNames = ["CMS", "OBALENDE", "MARINA", "BROAD ST", "IDUMOTA", "TBS", "OYINGBO", "LEKKI"];
+  const stopSpots: [number, number, number][] = [[40, 11, 0], [-150, -89, Math.PI], [140, 189, Math.PI], [-60, 111, 0], [11, -150, Math.PI / 2], [-111, 60, Math.PI / 2], [160, -11, Math.PI], [-170, 189, Math.PI]];
+  stopSpots.forEach(([x, z, rot], k) => {
+    busStops.push({ x, z, rot, name: stopNames[k] });
+  });
+
+  // concrete utility poles along sidewalks
+  const poles: P[] = [];
+  for (const L of sidewalks)
+    for (let e = 0; e < 4; e++) {
+      const a = L[e], b = L[(e + 1) % 4];
+      const len = Math.hypot(b.x - a.x, b.z - a.z);
+      for (let t = 9; t < len - 5; t += 28) {
+        const x = a.x + ((b.x - a.x) * t) / len, z = a.z + ((b.z - a.z) * t) / len;
+        // push slightly toward road
+        const ox = Math.abs(b.x - a.x) > 1 ? 0 : x > (L[0].x + L[1].x) / 2 ? 1 : -1;
+        const oz = Math.abs(b.z - a.z) > 1 ? 0 : z > (L[1].z + L[2].z) / 2 ? 1 : -1;
+        const p = { x: x + ox * 0.9, z: z + oz * 0.9 };
+        poles.push(p);
+        colliders.push({ minX: p.x - 0.2, maxX: p.x + 0.2, minZ: p.z - 0.2, maxZ: p.z + 0.2 });
+      }
+    }
+
   // island towers (Victoria Island / Eko Atlantic)
   const isl: [number, number, number][] = [[-35, 445, 70], [35, 450, 55], [-38, 495, 42], [36, 497, 80], [0, 505, 30]];
   for (const [x, z, h] of isl) {
@@ -120,7 +160,7 @@ export function buildWorld() {
   // Third Mainland-style bridge loop
   routes.push([{ x: 4, z: 196 }, { x: 4, z: 472 }, { x: -4, z: 472 }, { x: -4, z: 196 }]);
 
-  return { buildings, colliders, palms, stalls, billboards, sidewalks, blocks, routes, pillars };
+  return { buildings, colliders, palms, stalls, billboards, sidewalks, blocks, routes, pillars, busStops, poles };
 }
 
 export type World = ReturnType<typeof buildWorld>;
