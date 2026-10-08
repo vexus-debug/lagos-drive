@@ -1,10 +1,11 @@
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { RealCar, RealPed } from "./RealModels";
 import * as THREE from "three";
 import { Sky } from "three/examples/jsm/objects/Sky.js";
 import { GameAudio } from "./audio";
 import { HUD } from "./HUD";
-import { CarModel, Markers, PedModel, WorldMesh } from "./Models";
+import { CarModel, Markers, WorldMesh } from "./Models";
 import { createState, step } from "./sim";
 import { SPECS, type GameState, type Input } from "./types";
 import { buildWorld, type World } from "./world";
@@ -50,8 +51,8 @@ function Sim({ S, W, input, audio }: { S: GameState; W: World; input: React.RefO
     }
     for (const p of S.peds) {
       if (!p.obj) continue;
-      p.obj.position.set(p.x, p.dead > 0 ? 0.2 : Math.abs(Math.sin(p.phase)) * 0.06, p.z);
-      p.obj.rotation.set(p.dead > 0 ? -Math.PI / 2 : 0, p.h, 0, "YXZ");
+      p.obj.position.set(p.x, 0, p.z);
+      p.obj.rotation.set(0, p.h, 0);
     }
     const mk = S.markers;
     const bob = Math.sin(S.time * 3) * 0.3;
@@ -187,8 +188,10 @@ export function Game() {
     <div ref={wrap} className="fixed inset-0 bg-background" onClick={() => !touch && started && !locked && play()}>
       <Canvas shadows dpr={[1, 1.5]} camera={{ fov: 75, near: 0.1, far: 700, position: [10, 1.65, 20] }}>
         <WorldMesh W={W} />
-        {S.cars.map((c) => <CarModel key={c.id} car={c} />)}
-        {S.peds.map((p) => <PedModel key={p.id} ped={p} />)}
+        <Suspense fallback={null}>
+          {S.cars.map((c) => (c.type === "keke" ? <CarModel key={c.id} car={c} /> : <RealCar key={c.id} car={c} />))}
+          {S.peds.map((p) => <RealPed key={p.id} ped={p} />)}
+        </Suspense>
         <Markers S={S} />
         <Sim S={S} W={W} input={input} audio={audio} />
       </Canvas>
