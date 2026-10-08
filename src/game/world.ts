@@ -19,15 +19,20 @@ export function rng(seed: number) {
 const PALETTE = ["#f2e3c6", "#e8b07a", "#d9734e", "#5fb3a8", "#f4d35e", "#e6e1d3", "#8fb8de", "#c97b84", "#f0a868", "#9cc69b"];
 const STALL = ["#e63946", "#f4a261", "#2a9d8f", "#e9c46a", "#457b9d", "#8ac926", "#ff6b9a"];
 const SIGNS: [string, string, string][] = [
-  ["EKO ATLANTIC", "#0b4f6c", "#fdfcdc"],
-  ["JOLLOF KING", "#d62828", "#fcbf49"],
+  ["WELCOME TO LAGOS ISLAND", "#0b6e4f", "#ffffff"],
+  ["BALOGUN MARKET", "#d62828", "#fcbf49"],
   ["GO-SLOW? NO WAHALA", "#fcbf49", "#1d3557"],
-  ["MAMA PUT 24/7", "#2a9d8f", "#fefae0"],
-  ["SUYA SPOT", "#6a040f", "#ffba08"],
-  ["LAGOS NO DEY CARRY LAST", "#1d3557", "#f1faee"],
-  ["DANFO FM 92.3", "#ffd60a", "#000814"],
-  ["ZOBO FRESH", "#7b2cbf", "#ffd6ff"],
+  ["MAMA PUT - BROAD ST", "#2a9d8f", "#fefae0"],
+  ["SUYA SPOT IDUMOTA", "#6a040f", "#ffba08"],
+  ["EKO O NI BAJE", "#1d3557", "#f1faee"],
+  ["CMS BUS TERMINAL", "#ffd60a", "#000814"],
+  ["POS / BUREAU DE CHANGE", "#7b2cbf", "#ffd6ff"],
 ];
+/** Real Lagos Island street names mapped onto the road lines (z = horizontal, x = vertical). */
+export const STREET_Z: Record<number, string> = { [-200]: "Nnamdi Azikiwe St", [-100]: "Marina (Expressway)", 0: "Broad Street", 100: "Martins Street", 200: "Marina Waterfront" };
+export const STREET_X: Record<number, string> = { [-200]: "Idumota Rd", [-100]: "Balogun St", 0: "Odunlami St", 100: "Joseph St", 200: "CMS / Bishop Crowther" };
+export const NECOM = { x: 50, z: 50, w: 16, h: 95 };
+export const GPT_COLORS = ["#1a1a1a", "#2a2a2a", "#1d4ed8", "#111"];
 
 export function buildWorld() {
   const r = rng(1337);
